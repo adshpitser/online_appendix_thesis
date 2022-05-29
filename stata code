@@ -1,0 +1,256 @@
+//ttest
+bysort year: ttest ln_wage, by(lang)
+
+// mnk
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if year == 2019, vce(robust)
+est store mnk2019
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if year == 2019, vce(robust)
+est store mnk2019_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if year == 2020, vce(robust)
+est store mnk2020
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if year == 2020, vce(robust)
+est store mnk2020_level
+
+
+// chi-squared test
+bysort year: tab empl sex, chi2
+bysort year: tab empl age_group, chi2
+bysort year: tab empl marst1, chi2
+bysort year: tab empl child_under18, chi2
+bysort year: tab empl disable, chi2
+bysort year: tab empl educ1, chi2
+bysort year: tab empl city, chi2
+
+// heckman
+heckman ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if year == 2019, select(i.sex  i.educ1 i.marst1 ib0.child_under18 ib1.age_group ib1.city ib0.disable) twostep
+est store heckman2019
+heckman ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if year == 2019, select(i.sex  i.educ1 i.marst1 ib0.child_under18 ib1.age_group ib1.city ib0.disable) twostep
+est store heckman2019_level
+
+heckman ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if year == 2020, select(i.sex  i.educ1 i.marst1 ib0.child_under18 ib1.age_group ib1.city ib0.disable) twostep
+est store heckman2020
+heckman ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if year == 2020, select(i.sex  i.educ1 i.marst1 ib0.child_under18 ib1.age_group ib1.city ib0.disable) twostep
+est store heckman2020_level
+
+
+// sex
+reg ln_wage i.lang work_exp work_exp_sq i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & sex == 1), vce(robust)
+est store male2019_mnk
+reg ln_wage i.lang_level work_exp work_exp_sq i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & sex == 1), vce(robust)
+est store male2019_level_mnk
+
+reg ln_wage i.lang work_exp work_exp_sq i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & sex == 2), vce(robust)
+est store female2019_mnk
+reg ln_wage i.lang_level work_exp work_exp_sq i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & sex == 2), vce(robust)
+est store female2019_level_mnk
+
+reg ln_wage i.lang work_exp work_exp_sq i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & sex == 1), vce(robust)
+est store male2020_mnk
+reg ln_wage i.lang_level work_exp work_exp_sq i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & sex == 1), vce(robust)
+est store male2020_level_mnk
+
+reg ln_wage i.lang work_exp work_exp_sq i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & sex == 2), vce(robust)
+est store female2020_mnk
+reg ln_wage i.lang_level work_exp work_exp_sq i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & sex == 2), vce (robust)
+est store female2020_level_mnk
+
+
+// educ
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & educ1 == 0), vce(robust)
+est store educ0_2019_mnk
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & educ1 == 0), vce(robust)
+est store educ0_2019_level_mnk
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & educ1 == 1), vce(robust)
+est store educ1_2019_mnk
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & educ1 == 1), vce(robust)
+est store educ1_2019_level_mnk
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & educ1 == 0), vce(robust)
+est store educ0_2020_mnk
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & educ1 == 0), vce(robust)
+est store educ0_2020_level_mnk
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & educ1 == 1), vce(robust)
+est store educ1_2020_mnk
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & educ1 == 1), vce(robust)
+est store educ1_2020_level_mnk
+
+
+// age
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & age_group2 == 1), vce(robust)
+est store age1_2019_mnk
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & age_group2 == 1), vce(robust)
+est store age1_2019_level_mnk
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & age_group2 == 2), vce(robust)
+est store age2_2019_mnk
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & age_group2 == 2), vce(robust)
+est store age2_2019_level_mnk
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & age_group2 == 3), vce(robust)
+est store age3_2019_mnk
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & age_group2 == 3), vce(robust)
+est store age3_2019_level_mnk
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & age_group2 == 1), vce(robust)
+est store age1_2020_mnk
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & age_group2 == 1), vce(robust)
+est store age1_2020_level_mnk
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & age_group2 == 2), vce(robust)
+est store age2_2020_mnk
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & age_group2 == 2), vce(robust)
+est store age2_2020_level_mnk
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & age_group2 == 3), vce(robust)
+est store age3_2020_mnk
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & age_group2 == 3), vce(robust)
+est store age3_2020_level_mnk
+
+
+// prof groups
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & prof_group == 1), vce(robust)
+est store prof1_2019
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & prof_group == 1), vce(robust)
+est store prof1_2019_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & prof_group == 2), vce(robust)
+est store prof2_2019
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & prof_group == 2), vce(robust)
+est store prof2_2019_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & prof_group == 3), vce(robust)
+est store prof3_2019
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & prof_group == 3), vce(robust)
+est store prof3_2019_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & prof_group == 4), vce(robust)
+est store prof4_2019
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & prof_group == 4), vce(robust)
+est store prof4_2019_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & prof_group == 5), vce(robust)
+est store prof5_2019
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & prof_group == 5), vce(robust)
+est store prof5_2019_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & prof_group == 6), vce(robust)
+est store prof6_2019
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & prof_group == 6), vce(robust)
+est store prof6_2019_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & prof_group == 7), vce(robust)
+est store prof7_2019
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & prof_group == 7), vce(robust)
+est store prof7_2019_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & prof_group == 8), vce(robust)
+est store prof8_2019
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & prof_group == 8), vce(robust)
+est store prof8_2019_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & prof_group == 1), vce(robust)
+est store prof1_2020
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & prof_group == 1), vce(robust)
+est store prof1_2020_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & prof_group == 2), vce(robust)
+est store prof2_2020
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & prof_group == 2), vce(robust)
+est store prof2_2020_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & prof_group == 3), vce(robust)
+est store prof3_2020
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & prof_group == 3), vce(robust)
+est store prof3_2020_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & prof_group == 4), vce(robust)
+est store prof4_2020
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & prof_group == 4), vce(robust)
+est store prof4_2020_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & prof_group == 5), vce(robust)
+est store prof5_2020
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & prof_group == 5), vce(robust)
+est store prof5_2020_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & prof_group == 6), vce(robust)
+est store prof6_2020
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & prof_group == 6), vce(robust)
+est store prof6_2020_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & prof_group == 7), vce(robust)
+est store prof7_2020
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & prof_group == 7), vce(robust)
+est store prof7_2020_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & prof_group == 8), vce(robust)
+est store prof8_2020
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib1.sector i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & prof_group == 8), vce(robust)
+est store prof8_2020_level
+
+
+// sectors 
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & sector == 1), vce(robust)
+est store sector1_2019
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & sector == 1), vce(robust)
+est store sector1_2019_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & sector == 2), vce(robust)
+est store sector2_2019
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & sector == 2), vce(robust)
+est store sector2_2019_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & sector == 3), vce(robust)
+est store sector3_2019
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & sector == 3), vce(robust)
+est store sector3_2019_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & sector == 4), vce(robust)
+est store sector4_2019
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & sector == 4), vce(robust)
+est store sector4_2019_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & sector == 5), vce(robust)
+est store sector5_2019
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & sector == 5), vce(robust)
+est store sector5_2019_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & sector == 6), vce(robust)
+est store sector6_2019
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2019 & sector == 6), vce(robust)
+est store sector6_2019_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & sector == 1), vce(robust)
+est store sector1_2020
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & sector == 1), vce(robust)
+est store sector1_2020_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & sector == 2), vce(robust)
+est store sector2_2020
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & sector == 2), vce(robust)
+est store sector2_2020_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & sector == 3), vce(robust)
+est store sector3_2020
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & sector == 3), vce(robust)
+est store sector3_2020_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & sector == 4), vce(robust)
+est store sector4_2020
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & sector == 4), vce(robust)
+est store sector4_2020_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & sector == 5), vce(robust)
+est store sector5_2020
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & sector == 5), vce(robust)
+est store sector5_2020_level
+
+reg ln_wage i.lang work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & sector == 6), vce(robust)
+est store sector6_2020
+reg ln_wage i.lang_level work_exp work_exp_sq i.sex  i.educ1 i.marst1 ib1.city ib1.okrug ib8.prof_group i.foreign_ownership i.type_of_empl i.other_work i.work_cond ib1.size i.ownership i.budget_comp if (year == 2020 & sector == 6), vce(robust)
+est store sector6_2020_level
+
+
