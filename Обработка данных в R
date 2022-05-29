@@ -1,13 +1,36 @@
+# Загрузка библиотек и данных
+library(haven)
+library(dplyr)
+library(stringr)
+library(knitr)
+library(ggplot2) 
+library(haven)
+library(devtools)
+library(foreign)
+library(grid)
+library(vcd)
+library(readr)
+library(table1)
+library(naniar)
+library(dplyr)
+library(tidyr)
+library(gridExtra)
 
-# Загрузка данных
-data <- read_dta("Desktop/data.dta")
-dt=data%>% select(idind,year,region,status,popul,marst,OCCUP08,J4_1,J21_3,J8,J161_3Y,J77,J11_1,J32_1,J32,J13_2,J13,J24,J23,J25,diplom,H5,age,J260,J262,J72_171,J72_172,J72_173, J1_1_1,J1_1_2,J1_1_3, J1_1_4, M20_7)
-dt=dt%>%rename(work_hours=J8, work_exp= J161_3Y, zp=J13_2, company_size=J13)
-# Фильтр на возраст
+# Настройка формата чисел (чтобы без "e" было)
+options(scipen = 999)
+
+# Данные
+data <- read_dta("data.dta")
+dt=data%>% select(idind,year,region,status,marst,OCCUP08,J4_1,J21_3,J8,J161_3Y,J77,J11_1,J32_1,J32,J13_2,J13,J24,J23,J25,diplom,H5,age,J260,J262,J72_171,J72_172,J72_173, M20_7)
+# Возраст
 dt=dt%>% filter((H5==1 & age <= 60 & age >=16) |(H5==2 & age <= 55 & age >=16))
-
 # Обозначаем Na
 dt[dt==99999999 | dt==99999998 | dt==99999997   ] <- NA
+dt=dt%>%rename(work_hours=J8, work_exp= J161_3Y, zp=J13_2, company_size=J13)
+#убираю военнослужащих и "другое"
+dt=dt%>%filter(!(OCCUP08==0) | is.na(dt$OCCUP08))
+dt=dt%>%filter(!(J4_1==22| J4_1==28) | is.na(dt$J4_1))
+dt=dt%>%filter(year!=2018)
 
 # Формирование переменных
 dt=dt%>%
@@ -15,6 +38,14 @@ dt=dt%>%
     educ1=case_when(
       diplom==6~ 1,
       diplom<6 ~ 0), # 1- высшее, 2 - нет
+    sex=case_when(
+      H5==1~ 1,
+      H5==2 ~ 0),
+    lang_level=case_when(
+      J262==1 ~ 1,
+      J262==2 ~ 2,
+      J262==3 ~ 3,
+      is.na(J262) ~ 0),
     age_group=case_when(
       age>=16 & age<=24 ~ 1,
       age>=25 & age<=29 ~ 2,
@@ -52,19 +83,17 @@ dt=dt%>%
       J24==1~ 1,
       J24==2 ~ 0),
     sector=case_when(
-      J4_1==1 | J4_1==2 | J4_1==3|J4_1==4|J4_1==5|J4_1==8 | J4_1==16|J4_1==23|J4_1==24~ 1, #"Промышленность и сельское хозяйство"
-      J4_1==6 | J4_1==7 |J4_1==17 ~ 2, #"Строительство, транспорт, связь, ЖКХ"
+      J4_1==1 | J4_1==2 | J4_1==3|J4_1==4|J4_1==5|J4_1==8 | J4_1==16|J4_1==23|J4_1==24 ~ 1, #"Промышленность и сельское хозяйство"
+      J4_1==6 | J4_1==7  ~ 2, #"Строительство, транспорт, связь"
       J4_1==9 | J4_1==13 ~ 3, #"Органы управления и безопасности"
       J4_1==10| J4_1==11| J4_1==12| J4_1==20| J4_1==25 | J4_1==29|J4_1==32~ 4, #"Социальная сфера"
-      J4_1==14| J4_1==18 | J4_1==26~ 5, #"Торговля, бытовое обслуживание, услуги населению"
-      J4_1==15| J4_1==21| J4_1==27 ~ 6, #"IT, консалтинговые услуги"
-      J4_1==30| J4_1==31 ~ 7, #"СМИ, Реклама, Маркетинг"
-      J4_1==22| J4_1==28 ~ 8 #"Другое"
+      J4_1==14| J4_1==18 | J4_1==26 |J4_1==17~ 5 , #"Торговля, бытовое обслуживание, услуги населению, ЖКХ"
+      J4_1==15| J4_1==21| J4_1==27 |J4_1==30| J4_1==31 ~ 6 #"IT, консалтинговые услуги, СМИ, Реклама, Маркетинг"
     ),
     prof_group=case_when(
       OCCUP08==1 ~ 1, #"Руководители высшего и среднего звена"
       OCCUP08==2 ~ 2, #"Специалисты высшего уровня квалификации"
-      OCCUP08==3| OCCUP08==0 ~ 3, #"Специалисты среднего уровня квалификации"
+      OCCUP08==3 ~ 3, #"Специалисты среднего уровня квалификации"
       OCCUP08==4 ~ 4, #"Cлужащие офисные и по обслуживанию клиентови"
       OCCUP08==5 ~ 5, #"Работники сферы услуг и торговли"
       OCCUP08==6| OCCUP08==7  ~ 6, #"Производственные рабочие"
@@ -73,12 +102,6 @@ dt=dt%>%
     work_cond=case_when(
       J21_3==1~ 1,
       J21_3==2 ~ 0),
-    job_satisfaction=case_when(
-      !(J1_1_2==4 | J1_1_2==5) ~ 0,
-      (J1_1_2==4 | J1_1_2==5) ~ 1),
-    second_work=case_when(
-      J32_1==1~ 1,
-      J32_1==2 ~ 0),
     other_work=case_when(
       J32==1~ 1,
       J32==2 ~ 0),
@@ -111,11 +134,12 @@ dt[dt==99999996] <- 0
 # Поэтапно удаляем пропуски
 dt2=dt
 dt2=dt2 %>%tidyr::drop_na(J77)
-# заменяю экстремальные значения по рабочим часам на пропуски
+# заменяю экстремальные значения по рабочим часам на пропумки
 dt2$work_hours[dt2$work_hours>360]<- NA
 # почасовая зп
 dt2=dt2%>%mutate(wage=zp/work_hours)
 dt2=dt2 %>%filter(!(is.na(dt2$wage) & dt2$J77==1))
+dt2 %>%filter((is.na(dt2$wage) & dt2$J77==1))
 dt2=dt2 %>%filter(!(is.na(dt2$OCCUP08) & dt2$J77==1))
 dt2=dt2 %>%filter(!(is.na(dt2$J4_1) & dt2$J77==1))
 dt2=dt2 %>%filter(!(is.na(dt2$type_of_empl) & dt2$J77==1))
@@ -131,32 +155,28 @@ dt2=dt2 %>%filter(!(is.na(dt2$J72_173) & dt2$J72_171==1))
 dt2=dt2%>% filter(!(is.na(dt2$size) & dt2$J77==1))
 dt2=dt2%>% filter(!(is.na(dt2$ownership) & dt2$J77==1))
 
+#дефлирую зп в 2020 году
+## инфляцияв в 2020 - 4.9%
+dt2=dt2%>%mutate(wage_def=case_when(year==2020 ~ dt2$wage/1.049,
+                                    year==2019 ~ dt2$wage))
 #удаляю нулевую почасовую
 dt3=dt2%>%filter(wage>0 | is.na(wage))
-quantile(dt3$wage, probs=c(0.01, 0.99), na.rm=T)
+quantile(dt3$wage_def, probs=c(0.01, 0.99), na.rm=T)
 
 # удаляю верхний/нижний квантиль по зп
-# 1% квантиль = 45.45455, 99%= 850 
-dt3=dt3%>%filter((wage>=45.45455 & wage<=850) | is.na(wage))
-dt3=dt3%>%mutate(ln_wage=log(wage))
+# 1% квантиль = 46.2963, 99%= 813.3162
+dt3=dt3%>%filter((wage_def>=46.2963 & wage_def<=813.3162) | is.na(wage_def))
 
-# уровень языка
-dt3=dt3%>%
-  mutate(
-    lang_level=case_when(
-      J262==1 ~ 1,
-      J262==2 ~ 2,
-      J262==3 ~ 3,
-      is.na(J262) ~ 0))
-# опыт
-dt3=dt3%>%mutate(work_exp_sq=work_exp*work_exp)
+#1% квантиль = 3.969546, 99%= 6.437752
+dt3=dt3%>%mutate(ln_wage=log(wage_def))
+quantile(dt3$ln_wage, probs=c(0.01, 0.99), na.rm=T)
+dt3=dt3%>%filter((ln_wage>=3.969546 &ln_wage<=6.437752) | is.na(ln_wage))
 
-# Cохраняю итоговые данные
-dt3=dt3%>%rename(empl=J77, sex= H5)
-data_finalfinal=dt3%>%select(idind, year, J260, lang_level, empl, sex, age, age_group,age_group2, marst1, child_under18, educ1, city, okrug, zp, ln_zp, wage, ln_wage, work_exp,work_exp_sq, other_work, work_cond, type_of_empl, sector, prof_group,size, ownership, budget_comp, foreign_ownership, disable)
-write.dta(data_finalfinal, file = "data_finalfinal2.dta")
+dt3=dt3%>%mutate(work_exp_sq=work_exp*work_exp, lang=case_when(J260==1 ~ 1,
+                                                               J260==2 ~0))
+dt3=dt3%>%rename(empl=J77)
 
-# Часовая зп до и после выбросов
+# часовая зп до и после выбросов
 k1=dt2%>%ggplot(aes(x = log(wage))) +
   geom_histogram (aes(y = ..density..), fill="darkseagreen3",  alpha=0.6, binwidth =0.06) + 
   labs(title = " ",
@@ -173,7 +193,6 @@ k2=dt3%>% ggplot(aes(x = ln_wage)) +
        fill = " ") + theme(legend.position = "none")+
   geom_density(alpha = .2, fill = "white")+ 
   theme_classic()
-grid.arrange(k1, k2, ncol = 2)
 
 m1=dt2%>%ggplot(aes( y = log(wage))) +
   geom_boxplot(fill="darkseagreen3", alpha=0.6)+ 
@@ -189,32 +208,46 @@ m2=dt3%>%ggplot(aes( y = ln_wage)) +
        x = "После", 
        y = " ",
        fill = " ")
+
+grid.arrange(k1, k2, ncol = 2)
 grid.arrange(m1, m2, ncol = 2)
 
-# Первичная проверка взаимосвязи 
-ggplot(df, aes(x = as.factor(J260), y = ln_wage, fill=as.factor(J260) )) +            # Applying ggplot function
-  geom_boxplot(alpha = 0.5)+ 
-  theme_classic()+
-  scale_fill_manual(name = "Знание иностранного языка", values = c("forestgreen", "red"), labels = c("Знают", "Не знают"))+ 
-  labs(title = " ",
-       x = "", 
-       y = "Логарифм почасовой заработной платы")
-ggplot(df, aes(x = ln_wage)) +
+# Т-тест в виде графика
+s1=ggplot(df%>%filter(year==2019), aes(x = ln_wage)) +
   geom_density(aes(group = J260, color=J260), alpha = 0.5) +
-  scale_color_manual(name = "Знание иностранного языка", values = c("forestgreen", "red"), labels = c("Знают", "Не знают"))+
+  scale_color_manual(name = "Владение иностранного языка", values = c("forestgreen", "red"), labels = c("Знают", "Не знают"))+
   theme_classic() + 
   labs(title = " ",
-       x = "Логарифм почасовой заработной платы", 
-       y = " ")
+       x = "Логарифм почасовой зарплаты в 2019 году", 
+       y = " ")+ theme(legend.position = c(1.5, 1))
 
-# Делаем красивые таблицы для описательных статистик
-df=data_finalfinal
+s2=ggplot(df%>%filter(year==2020), aes(x = ln_wage)) +
+  geom_density(aes(group = J260, color=J260), alpha = 0.5) +
+  scale_color_manual(name = "Владение ин. языком", values = c("forestgreen", "red"), labels = c("Владеют", "Не владеют"))+
+  theme_classic() + 
+  labs(title = " ",
+       x = "Логарифм почасовой зарплаты в 2020 году", 
+       y = " ")+ theme(legend.position = c(0.8, 0.99))+
+  theme(legend.key.size = unit(0.25, 'cm')) +
+  theme(legend.title = element_text(size=10))
+
+grid.arrange(s1, s2, ncol = 2)
+
+# Cохраняем данные для статы
+df=dt3%>%select(idind, year, lang, lang_level, empl, sex, age,
+                             age_group,age_group2, marst1, child_under18, educ1, city, okrug, ln_wage, work_exp,work_exp_sq, 
+                             other_work, work_cond, type_of_empl, 
+                             sector, prof_group,size, ownership, budget_comp, foreign_ownership, disable)
+
+write.dta(df, file = "df_final.dta")
+
+# Делаем описательные таблицы 
 df$educ1 <- 
   factor(df$educ1, levels=c(1,0),
          labels=c("Да", 
                   "Нет"))
-df$J260 <- 
-  factor(df$J260, levels=c(1,2),
+df$lang <- 
+  factor(df$lang, levels=c(1,0),
          labels=c("Да", 
                   "Нет"))
 df$lang_level <- 
@@ -224,7 +257,7 @@ df$lang_level <-
                   "могут изъясняться и достаточно свободно читают", 
                   "могут изъясняться, читают и переводят со словарем"))
 df$sex <- 
-  factor(df$sex, levels=c(1,2),
+  factor(df$sex, levels=c(1,0),
          labels=c("Мужской", 
                   "Женский"))
 df$marst1 <- 
@@ -245,6 +278,12 @@ df$age_group <-
                   "45-49",
                   "50-54", 
                   "55+"))
+df$age_group2 <- 
+  factor(df$age_group2, levels=c(1,2,3),
+         labels=c("16-29", 
+                  "30-39",
+                  "40+"))
+
 df$empl <- 
   factor(df$empl, levels=c(1,2),
          labels=c("Работают", 
@@ -277,15 +316,13 @@ df$prof_group <-
                   "Операторы машин",
                   "Неквалифицированные рабочие"))
 df$sector <- 
-  factor(df$sector, levels=c(1,2,3,4,5,6,7,8),
+  factor(df$sector, levels=c(1,2,3,4,5,6),
          labels=c("Промышленность и сельское хозяйство", 
-                  "Строительство, транспорт, связь, ЖКХ",
+                  "Строительство, транспорт, связь",
                   "Органы управления и безопасности",
                   "Социальная сфера",
-                  "Торговля, бытовое обслуживание, услуги населению",
-                  "IT, консалтинговые услуги",
-                  "СМИ, Реклама, Маркетинг",
-                  "Другое"))
+                  "Торговля, бытовое обслуживание, услуги населению, ЖКХ",
+                  "IT, консалтинговые услуги, СМИ, Реклама, Маркетинг"))
 df$size <- 
   factor(df$size, levels=c(1,2,3,4,5,6),
          labels=c("<30", 
@@ -324,12 +361,13 @@ df$foreign_ownership <-
                   "Нет"))
 
 label(df$educ1) <- "Высшее образование"
-label(df$J260) <- "Знание ин. языка"
+label(df$lang) <- "Знание ин. языка"
 label(df$lang_level) <- "Степень владения иностранным языком"
 label(df$sex) <- "Пол респондента"
 label(df$marst1) <- "Семейное положение"
 label(df$child_under18) <- "Наличие детей младше 18 лет"
 label(df$age_group) <- "Возрастная группа"
+label(df$age_group2) <- "Возрастная группа"
 label(df$empl) <- "Занятость"
 label(df$city) <- "Тип населенного пункта"
 label(df$okrug) <- "Федеральный округ"
@@ -346,77 +384,29 @@ label(df$foreign_ownership) <- "Иностранная собственност�
 label(df$ln_wage) <- "Логарифм почасовой заработной платы"
 label(df$work_exp) <- "Стаж"
 
-#Личные характеристики для всей выборки
-table1(~  sex + age + marst1 + child_under18 + disable +educ1 + city + okrug + J260 + lang_level |factor(year) , data=df)
-
 # Только Работники 
-table1(~  J260 + lang_level + sex + age_group + marst1 + child_under18 + disable +educ1 + city + okrug + ln_wage + work_exp + other_work + work_cond + type_of_empl + sector +prof_group +size + ownership + budget_comp + foreign_ownership|factor(year) , data=df%>%filter(empl=="Работают"))
+table1(~ sex + age_group2 + marst1 +educ1  + city + okrug + ln_wage + work_exp + other_work + work_cond + type_of_empl + sector +prof_group +size + ownership + budget_comp + foreign_ownership|factor(year) , data=df%>%filter(empl=="Работают"), overall=F)
+# # переменные для уравнения селекта
+table1(~  sex+ age_group + marst1 + child_under18 + disable +educ1 + city |factor(year) , data=df, overall=F)
 
 # Показатели владения по годам, работники
-table1(~ J260 |year, data=df%>%filter(empl=="Работают"))
-table1(~ lang_level |year, data=df%>%filter(empl=="Работают"))
-
-table1(~ J260 |sex*year, data=df%>%filter(empl=="Работают"))
-table1(~ J260 |age_group*year, data=df%>%filter(empl=="Работают"))
-table1(~ J260 |marst1*year , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |child_under18*year , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |disable*year , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |educ1*year , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |city*year , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |okrug*year , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |other_work*year , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |work_cond*year , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |type_of_empl*year , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |ownership*year, data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |budget_comp*year , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |foreign_ownership*year , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |sector*year , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |prof_group*year , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |size*year , data=df%>%filter(empl=="Работают"), overall=F)
-
-# Показатели владения overall, работники
-table1(~ J260 |sex, data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |age_group, data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |marst1 , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |child_under18 , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |disable, data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |educ1 , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |city , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |okrug , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |other_work , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |work_cond , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |type_of_empl , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |ownership , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |budget_comp , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |foreign_ownership , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |sector , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |prof_group , data=df%>%filter(empl=="Работают"), overall=F)
-table1(~ J260 |size , data=df%>%filter(empl=="Работают"), overall=F)
-
-# Показатели владения по годам, все
-table1(~ J260 |year, data=df )
-table1(~ lang_level |year, data=df )
-
-table1(~ J260 |sex*year, data=df )
-table1(~ J260 |age_group*year, data=df )
-table1(~ J260 |marst1*year , data=df , overall=F)
-table1(~ J260 |child_under18*year , data=df , overall=F)
-table1(~ J260 |disable*year , data=df , overall=F)
-table1(~ J260 |educ1*year , data=df , overall=F)
-table1(~ J260 |city*year , data=df , overall=F)
-table1(~ J260 |okrug*year , data=df , overall=F)
-
-# Показатели владения overall, все
-table1(~ J260 |sex, data=df , overall=F)
-table1(~ J260 |age_group, data=df , overall=F)
-table1(~ J260 |marst1 , data=df , overall=F)
-table1(~ J260 |child_under18 , data=df , overall=F)
-table1(~ J260 |disable, data=df , overall=F)
-table1(~ J260 |educ1 , data=df , overall=F)
-table1(~ J260 |city , data=df , overall=F)
-table1(~ J260 |okrug , data=df , overall=F)
-
-# Cross-tab для уравнения самоотбора
-table1(~   sex + age_group + marst1 + child_under18 + disable +educ1 + city + okrug |empl , data=df)
-
+table1(~ lang |year, data=df%>%filter(empl=="Работают" ), overall=F)
+table1(~ lang_level |year, data=df%>%filter(empl=="Работают"), overall=F)
+table1(~ lang |sex*year, data=df%>%filter(empl=="Работают"), overall=F)
+table1(~ lang |age_group2*year, data=df%>%filter(empl=="Работают"), overall=F)
+table1(~ lang |marst1*year , data=df%>%filter(empl=="Работают"), overall=F)
+table1(~ lang |child_under18*year , data=df%>%filter(empl=="Работают"), overall=F)
+table1(~ lang |disable*year , data=df%>%filter(empl=="Работают"), overall=F)
+table1(~ lang |educ1*year , data=df%>%filter(empl=="Работают"), overall=F)
+table1(~ lang |city*year , data=df%>%filter(empl=="Работают"), overall=F)
+table1(~ lang |okrug*year , data=df%>%filter(empl=="Работают"), overall=F)
+table1(~ lang |other_work*year , data=df%>%filter(empl=="Работают"), overall=F)
+table1(~ lang |work_cond*year , data=df%>%filter(empl=="Работают"), overall=F)
+table1(~ lang |type_of_empl*year , data=df%>%filter(empl=="Работают"), overall=F)
+table1(~ lang |ownership*year, data=df%>%filter(empl=="Работают"), overall=F)
+table1(~ lang |budget_comp*year , data=df%>%filter(empl=="Работают"), overall=F)
+table1(~ lang |foreign_ownership*year , data=df%>%filter(empl=="Работают"), overall=F)
+table1(~ lang |sector*year , data=df%>%filter(empl=="Работают"), overall=F)
+table1(~ lang |prof_group*year , data=df%>%filter(empl=="Работают"), overall=F)
+table1(~ lang |size*year , data=df%>%filter(empl=="Работают"), overall=F)
 
